@@ -4,7 +4,7 @@ resource "aws_eks_cluster" "this" {
   version = var.k8s_version
   
   vpc_config {
-    subnet_ids = var.eks_cluster_subnet_ids
+    subnet_ids = var.cluster_subnet_ids
   }
 
   tags = merge(
@@ -22,14 +22,7 @@ data "external" "eks_oidc_thumbprint" {
 resource "aws_iam_openid_connect_provider" "eks_openid_connect" {
   client_id_list  = ["sts.amazonaws.com"]
   thumbprint_list = [data.external.eks_oidc_thumbprint.result.thumbprint]
-  url             = aws_eks_cluster.eks_cluster.identity.0.oidc.0.issuer
-
-  tags = merge(
-    {
-      "Name" = format("%s", var.name),
-    },
-    var.tags
-  )
+  url             = aws_eks_cluster.this.identity.0.oidc.0.issuer
 }
 
 resource "aws_eks_node_group" "this" {
